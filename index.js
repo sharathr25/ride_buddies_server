@@ -10,6 +10,7 @@ const { DB_URL } = require('./src/configs/db.config')
 const authMiddleware = require('./src/middlewares/auth.middleware')
 
 const tripsRouter = require('./src/routes/trips.route')
+const authRouter = require('./src/routes/auth.route')
 const healthRouter = require('./src/routes/health.route')
 
 admin.initializeApp({ projectId: process.env.RIDE_BUDDIES_PROJECT_ID })
@@ -23,6 +24,7 @@ app.use(
   })
 )
 
+app.use('/api/auth', authRouter)
 app.use('/api/trips', authMiddleware, tripsRouter)
 app.use('/api/health', healthRouter)
 

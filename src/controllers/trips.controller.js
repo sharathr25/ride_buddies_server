@@ -3,7 +3,7 @@ const {
   findByCode,
   getTripsByUserId,
   getExpensesByTripId,
-  getMessagesByTripId,
+  getEventssByTripId,
   getRidersByTripId,
   joinByTripCode
 } = require('../services/trips.service')
@@ -23,8 +23,8 @@ async function getExpenses (tripId) {
   return await getExpensesByTripId(tripId)
 }
 
-async function getMessages (tripId) {
-  return await getMessagesByTripId(tripId)
+async function getEvents (tripId) {
+  return await getEventssByTripId(tripId)
 }
 
 async function createTrip (attrs) {
@@ -50,6 +50,6 @@ module.exports = {
   getMyTrips,
   getRiders,
   getExpenses,
-  getMessages,
+  getEvents,
   joinTrip
 }

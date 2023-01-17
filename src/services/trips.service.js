@@ -26,9 +26,9 @@ async function getExpensesByTripId (id) {
   })
 }
 
-async function getMessagesByTripId (id) {
+async function getEventssByTripId (id) {
   return await Trip.findById(id).select({
-    messages: 1
+    events: 1
   })
 }
 
@@ -59,5 +59,5 @@ module.exports = {
   getTripsByUserId,
   getRidersByTripId,
   getExpensesByTripId,
-  getMessagesByTripId
+  getEventssByTripId
 }

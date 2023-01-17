@@ -26,12 +26,13 @@ const tripSchema = new Schema({
       on: { type: Date, default: Date.now }
     }
   ],
-  messages: [
+  events: [
     {
       by: {
         type: userSchema
       },
-      message: String,
+      type: { type: String, enum: ['CUSTOM'] },
+      title: String,
       on: { type: Date, default: Date.now }
     }
   ],

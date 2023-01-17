@@ -5,7 +5,7 @@ const {
   getMyTrips,
   getRiders,
   getExpenses,
-  getMessages,
+  getEvents,
   joinTrip
 } = require('../controllers/trips.controller')
 
@@ -39,9 +39,9 @@ router.get('/:tripId/expenses', async (req, res, next) => {
   }
 })
 
-router.get('/:tripId/messages', async (req, res, next) => {
+router.get('/:tripId/events', async (req, res, next) => {
   try {
-    const tripWithMessages = await getMessages(req.params.tripId)
+    const tripWithMessages = await getEvents(req.params.tripId)
     res.json(tripWithMessages)
   } catch (error) {
     console.error(`Error while getting users`, error.message)
