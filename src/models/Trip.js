@@ -31,7 +31,18 @@ const tripSchema = new Schema({
       by: {
         type: userSchema
       },
-      type: { type: String, enum: ['CUSTOM'] },
+      type: {
+        type: String,
+        enum: [
+          'CUSTOM',
+          'SIGHTSEEING',
+          'REFUELING',
+          'COFEE_BREAK',
+          'REPAIR',
+          'GOT_LOST',
+          'PULL_OVER'
+        ]
+      },
       title: String,
       on: { type: Date, default: Date.now }
     }

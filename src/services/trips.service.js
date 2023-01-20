@@ -4,6 +4,10 @@ async function findByCode (code) {
   return await Trip.findOne({ code })
 }
 
+async function getTripOverviewByCode (code) {
+  return await Trip.findOne({ code })
+}
+
 async function getTripsByUserId (uid) {
   return await Trip.find({
     $or: [{ 'creation.by.uid': uid }, { riders: { $elemMatch: { uid } } }]
@@ -59,5 +63,6 @@ module.exports = {
   getTripsByUserId,
   getRidersByTripId,
   getExpensesByTripId,
-  getEventssByTripId
+  getEventssByTripId,
+  getTripOverviewByCode
 }

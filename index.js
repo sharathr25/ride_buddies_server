@@ -13,6 +13,8 @@ const tripsRouter = require('./src/routes/trips.route')
 const authRouter = require('./src/routes/auth.route')
 const healthRouter = require('./src/routes/health.route')
 
+const handleSocket = require('./src/socket')
+
 admin.initializeApp({ projectId: process.env.RIDE_BUDDIES_PROJECT_ID })
 
 const app = express()
@@ -39,10 +41,7 @@ app.use((err, _req, res, _next) => {
 
 const httpServer = createServer(app)
 const io = new Server(httpServer, {})
-
-io.on('connection', socket => {
-  // ...
-})
+io.on('connection', handleSocket)
 
 const port = process.env.PORT || 3000
 

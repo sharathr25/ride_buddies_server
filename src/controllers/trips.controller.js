@@ -5,7 +5,8 @@ const {
   getExpensesByTripId,
   getEventssByTripId,
   getRidersByTripId,
-  joinByTripCode
+  joinByTripCode,
+  getTripOverviewByCode
 } = require('../services/trips.service')
 const { randomCode } = require('../utils')
 
@@ -40,6 +41,10 @@ async function createTrip (attrs) {
   return await create({ name, user, code })
 }
 
+async function getTripByCode (tripCode) {
+  return await getTripOverviewByCode(tripCode)
+}
+
 async function joinTrip (attrs) {
   const { tripCode, user } = attrs
   return await joinByTripCode({ tripCode, user })
@@ -51,5 +56,6 @@ module.exports = {
   getRiders,
   getExpenses,
   getEvents,
-  joinTrip
+  joinTrip,
+  getTripByCode
 }
