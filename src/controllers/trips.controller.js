@@ -5,8 +5,11 @@ const {
   getExpensesByTripId,
   getEventssByTripId,
   getRidersByTripId,
-  joinByTripCode,
-  getTripOverviewByCode
+  addRiderToTrip,
+  getTripOverviewByCode,
+  saveNewExpense,
+  deleteExpense,
+  updateTripExpense
 } = require('../services/trips.service')
 const { randomCode } = require('../utils')
 
@@ -45,9 +48,21 @@ async function getTripByCode (tripCode) {
   return await getTripOverviewByCode(tripCode)
 }
 
-async function joinTrip (attrs) {
-  const { tripCode, user } = attrs
-  return await joinByTripCode({ tripCode, user })
+async function joinTrip ({ tripCode, user }) {
+  return await addRiderToTrip({ tripCode, user })
+}
+
+async function addExpense ({ expense, tripCode, socket }) {
+  const uid = socket.user.uid
+  return await saveNewExpense({ expense, tripCode, uid })
+}
+
+async function updateExpense ({ expense, tripCode }) {
+  return await updateTripExpense({ expense, tripCode })
+}
+
+async function removeExpense ({ _id: expenseId, tripCode }) {
+  return await deleteExpense({ expenseId, tripCode })
 }
 
 module.exports = {
@@ -57,5 +72,8 @@ module.exports = {
   getExpenses,
   getEvents,
   joinTrip,
-  getTripByCode
+  getTripByCode,
+  addExpense,
+  updateExpense,
+  removeExpense
 }

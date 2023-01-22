@@ -28,9 +28,7 @@ const tripSchema = new Schema({
   ],
   events: [
     {
-      by: {
-        type: userSchema
-      },
+      by: { type: String, required: true }, // uid
       type: {
         type: String,
         enum: [
@@ -47,7 +45,19 @@ const tripSchema = new Schema({
       on: { type: Date, default: Date.now }
     }
   ],
-  expenses: [{}]
+  expenses: [
+    {
+      creation: {
+        by: String, // uid,
+        on: { type: Date, default: Date.now }
+      },
+      by: { type: String, required: true }, // uid
+      title: { type: String, required: true }, // String
+      amount: { type: Number, required: true },
+      currency: { type: String, default: 'INR' },
+      for: [String] // uids - if empty means everyone shares this expense
+    }
+  ]
 })
 
 const Trip = mongoose.model('Trip', tripSchema)

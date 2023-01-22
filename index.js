@@ -1,7 +1,6 @@
 const express = require('express')
 const bodyParser = require('body-parser')
 const { createServer } = require('http')
-const { Server } = require('socket.io')
 const mongoose = require('mongoose')
 const admin = require('firebase-admin')
 
@@ -13,7 +12,7 @@ const tripsRouter = require('./src/routes/trips.route')
 const authRouter = require('./src/routes/auth.route')
 const healthRouter = require('./src/routes/health.route')
 
-const handleSocket = require('./src/socket')
+const initSocket = require('./src/socket')
 
 admin.initializeApp({ projectId: process.env.RIDE_BUDDIES_PROJECT_ID })
 
@@ -40,9 +39,7 @@ app.use((err, _req, res, _next) => {
 })
 
 const httpServer = createServer(app)
-const io = new Server(httpServer, {})
-io.on('connection', handleSocket)
-
+initSocket(httpServer)
 const port = process.env.PORT || 3000
 
 mongoose.set('strictQuery', false)

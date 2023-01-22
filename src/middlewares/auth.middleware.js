@@ -1,16 +1,9 @@
-const admin = require('firebase-admin')
+const { verifyIdToken } = require('../services/auth.service')
 
 const authMiddleware = async (req, res, next) => {
   const [_, token] = req.headers.authorization.split(' ')
   try {
-    const data = await admin.auth().verifyIdToken(token)
-    const { name, phone_number, uid, picture } = data
-    req.user = {
-      name,
-      phoneNumber: phone_number,
-      color: picture, // stored color as picture while sign up
-      uid
-    }
+    req.user = await verifyIdToken(token)
     next()
   } catch (error) {
     console.error(error)

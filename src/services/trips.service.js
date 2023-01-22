@@ -5,7 +5,9 @@ async function findByCode (code) {
 }
 
 async function getTripOverviewByCode (code) {
-  return await Trip.findOne({ code })
+  const data = await Trip.aggregate([{ $match: { code: code } }])
+  console.log(data)
+  return data[0]
 }
 
 async function getTripsByUserId (uid) {
@@ -47,7 +49,7 @@ async function create ({ name, code, user }) {
   }).save()
 }
 
-async function joinByTripCode ({ tripCode, user }) {
+async function addRiderToTrip ({ tripCode, user }) {
   let trip = await findByCode(tripCode)
   if (trip) {
     trip.riders.push(user)
@@ -56,13 +58,62 @@ async function joinByTripCode ({ tripCode, user }) {
   return trip
 }
 
+async function saveNewExpense ({ tripCode, expense, uid }) {
+  const trip = await Trip.findOneAndUpdate(
+    { code: tripCode },
+    {
+      $push: {
+        expenses: {
+          ...expense,
+          creation: {
+            by: uid
+          }
+        }
+      }
+    },
+    {
+      new: true
+    }
+  )
+  return trip.expenses[trip.expenses.length - 1]
+}
+
+async function updateTripExpense ({ tripCode, expense }) {
+  await Trip.findOneAndUpdate(
+    { code: tripCode, expenses: { $elemMatch: { _id: expense._id } } },
+    {
+      $set: {
+        'expenses.$.title': expense.title,
+        'expenses.$.amount': expense.amount,
+        'expenses.$.for': expense.for,
+        'expenses.$.by': expense.by
+      }
+    },
+    {
+      new: true
+    }
+  )
+  return expense
+}
+
+async function deleteExpense ({ expenseId, tripCode }) {
+  await Trip.updateOne(
+    { code: tripCode },
+    { $pullAll: { expenses: [{ _id: expenseId }] } }
+  )
+  return expenseId
+}
+
 module.exports = {
   findByCode,
   create,
-  joinByTripCode,
+  addRiderToTrip,
   getTripsByUserId,
   getRidersByTripId,
   getExpensesByTripId,
   getEventssByTripId,
-  getTripOverviewByCode
+  getTripOverviewByCode,
+  saveNewExpense,
+  deleteExpense,
+  updateTripExpense
 }
