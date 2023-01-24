@@ -5,9 +5,43 @@ async function findByCode (code) {
 }
 
 async function getTripOverviewByCode (code) {
-  const data = await Trip.aggregate([{ $match: { code: code } }])
-  console.log(data)
-  return data[0]
+  const trip = await findByCode(code)
+
+  const expensesGrouped = await Trip.aggregate([
+    { $match: { code: code } },
+    { $project: { expenses: 1 } },
+    { $unwind: '$expenses' },
+    {
+      $group: {
+        _id: '$expenses.by',
+        amount: { $sum: '$expenses.amount' }
+      }
+    }
+  ])
+
+  const eventsGrouped = await Trip.aggregate([
+    { $match: { code: code } },
+    { $project: { events: 1 } },
+    { $unwind: '$events' },
+    {
+      $group: {
+        _id: '$events.type',
+        count: { $sum: 1 }
+      }
+    }
+  ])
+
+  return {
+    _id: trip._id,
+    name: trip.name,
+    code: trip.code,
+    creation: trip.creation,
+    riders: trip.riders,
+    events: trip.events,
+    expenses: trip.expenses,
+    eventsGrouped,
+    expensesGrouped
+  }
 }
 
 async function getTripsByUserId (uid) {
