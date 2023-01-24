@@ -104,6 +104,48 @@ async function deleteExpense ({ expenseId, tripCode }) {
   return expenseId
 }
 
+async function saveNewEvent ({ tripCode, event, uid }) {
+  const trip = await Trip.findOneAndUpdate(
+    { code: tripCode },
+    {
+      $push: {
+        events: {
+          ...event,
+          by: uid
+        }
+      }
+    },
+    {
+      new: true
+    }
+  )
+  return trip.events[trip.events.length - 1]
+}
+
+async function updateTripEvent ({ tripCode, event }) {
+  await Trip.findOneAndUpdate(
+    { code: tripCode, events: { $elemMatch: { _id: event._id } } },
+    {
+      $set: {
+        'expenses.$.title': event.title,
+        'expenses.$.type': event.type
+      }
+    },
+    {
+      new: true
+    }
+  )
+  return event
+}
+
+async function deleteEvent ({ eventId, tripCode }) {
+  await Trip.updateOne(
+    { code: tripCode },
+    { $pullAll: { events: [{ _id: eventId }] } }
+  )
+  return eventId
+}
+
 module.exports = {
   findByCode,
   create,
@@ -115,5 +157,8 @@ module.exports = {
   getTripOverviewByCode,
   saveNewExpense,
   deleteExpense,
-  updateTripExpense
+  updateTripExpense,
+  saveNewEvent,
+  updateTripEvent,
+  deleteEvent
 }

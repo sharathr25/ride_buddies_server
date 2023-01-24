@@ -3,7 +3,10 @@ const {
   getTripByCode,
   addExpense,
   removeExpense,
-  updateExpense
+  updateExpense,
+  addEvent,
+  updateEvent,
+  removeEvent
 } = require('../controllers/trips.controller')
 const authSocketMiddleware = require('../middlewares/auth.socket.middleware')
 
@@ -32,7 +35,7 @@ const initSocket = httpServer => {
         const { expense, tripCode } = request
         const newExpense = await addExpense({ expense, tripCode, socket })
         io.in(`trip:${tripCode}`).emit('EXPENSE_ADDED', newExpense)
-        sendResponse({ msg: 'New expense added' })
+        sendResponse({ msg: 'Expense added' })
       } catch (error) {
         console.log(error)
         sendResponse({ error: "Couldn't add expense, try again" })
@@ -56,10 +59,46 @@ const initSocket = httpServer => {
         const { _id, tripCode } = request
         await removeExpense({ _id, tripCode })
         io.in(`trip:${tripCode}`).emit('EXPENSE_DELETED', _id)
-        sendResponse({ msg: 'expense deleted' })
+        sendResponse({ msg: 'Expense deleted' })
       } catch (error) {
         console.log(error)
         sendResponse({ error: "Couldn't delete expense, try again" })
+      }
+    })
+
+    socket.on('ADD_EVENT', async (request, sendResponse) => {
+      try {
+        const { event, tripCode } = request
+        const newEvent = await addEvent({ event, tripCode, socket })
+        io.in(`trip:${tripCode}`).emit('EVENT_ADDED', newEvent)
+        sendResponse({ msg: 'Event added' })
+      } catch (error) {
+        console.log(error)
+        sendResponse({ error: "Couldn't add evet, try again" })
+      }
+    })
+
+    socket.on('UPDATE_EVENT', async (request, sendResponse) => {
+      try {
+        const { event, tripCode } = request
+        const updatedEvent = await updateEvent({ event, tripCode })
+        io.in(`trip:${tripCode}`).emit('EVENT_UPDATED', updatedEvent)
+        sendResponse({ msg: 'Event updated' })
+      } catch (error) {
+        console.log(error)
+        sendResponse({ error: "Couldn't update event, try again" })
+      }
+    })
+
+    socket.on('DELETE_EVENT', async (request, sendResponse) => {
+      try {
+        const { eventId, tripCode } = request
+        await removeEvent({ eventId, tripCode })
+        io.in(`trip:${tripCode}`).emit('EVENT_DELETED', eventId)
+        sendResponse({ msg: 'Event deleted' })
+      } catch (error) {
+        console.log(error)
+        sendResponse({ error: "Couldn't delete event, try again" })
       }
     })
   })

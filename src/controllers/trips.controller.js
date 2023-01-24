@@ -9,7 +9,10 @@ const {
   getTripOverviewByCode,
   saveNewExpense,
   deleteExpense,
-  updateTripExpense
+  updateTripExpense,
+  saveNewEvent,
+  updateTripEvent,
+  deleteEvent
 } = require('../services/trips.service')
 const { randomCode } = require('../utils')
 
@@ -65,6 +68,19 @@ async function removeExpense ({ _id: expenseId, tripCode }) {
   return await deleteExpense({ expenseId, tripCode })
 }
 
+async function addEvent ({ event, tripCode, socket }) {
+  const uid = socket.user.uid
+  return await saveNewEvent({ event, tripCode, uid })
+}
+
+async function updateEvent ({ event, tripCode }) {
+  return await updateTripEvent({ event, tripCode })
+}
+
+async function removeEvent ({ expenseId, tripCode }) {
+  return await deleteEvent({ expenseId, tripCode })
+}
+
 module.exports = {
   createTrip,
   getMyTrips,
@@ -75,5 +91,8 @@ module.exports = {
   getTripByCode,
   addExpense,
   updateExpense,
-  removeExpense
+  removeExpense,
+  addEvent,
+  updateEvent,
+  removeEvent
 }
