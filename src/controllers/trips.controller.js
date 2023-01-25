@@ -12,7 +12,8 @@ const {
   updateTripExpense,
   saveNewEvent,
   updateTripEvent,
-  deleteEvent
+  deleteEvent,
+  updateRiderLocation
 } = require('../services/trips.service')
 const { randomCode } = require('../utils')
 
@@ -81,6 +82,11 @@ async function removeEvent ({ expenseId, tripCode }) {
   return await deleteEvent({ expenseId, tripCode })
 }
 
+async function updateLocation ({ location, tripCode, socket }) {
+  const uid = socket.user.uid
+  return await updateRiderLocation({ location, tripCode, uid })
+}
+
 module.exports = {
   createTrip,
   getMyTrips,
@@ -94,5 +100,6 @@ module.exports = {
   removeExpense,
   addEvent,
   updateEvent,
-  removeEvent
+  removeEvent,
+  updateLocation
 }

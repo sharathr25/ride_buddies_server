@@ -180,6 +180,23 @@ async function deleteEvent ({ eventId, tripCode }) {
   return eventId
 }
 
+async function updateRiderLocation ({ location, uid, tripCode }) {
+  // NOT UPDATING FOR NOW, SO THAT WE CAN JUST ECHO THE LOCATION
+  // await Trip.findOneAndUpdate(
+  //   { code: tripCode, riders: { $elemMatch: { uid: uid } } },
+  //   {
+  //     $set: {
+  //       'riders.$.location': location
+  //     }
+  //   },
+  //   {
+  //     new: true
+  //   }
+  // )
+
+  return { coords: location, uid }
+}
+
 module.exports = {
   findByCode,
   create,
@@ -194,5 +211,6 @@ module.exports = {
   updateTripExpense,
   saveNewEvent,
   updateTripEvent,
-  deleteEvent
+  deleteEvent,
+  updateRiderLocation
 }

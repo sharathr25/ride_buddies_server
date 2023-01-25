@@ -6,7 +6,8 @@ const {
   updateExpense,
   addEvent,
   updateEvent,
-  removeEvent
+  removeEvent,
+  updateLocation
 } = require('../controllers/trips.controller')
 const authSocketMiddleware = require('../middlewares/auth.socket.middleware')
 
@@ -99,6 +100,22 @@ const initSocket = httpServer => {
       } catch (error) {
         console.log(error)
         sendResponse({ error: "Couldn't delete event, try again" })
+      }
+    })
+
+    socket.on('UPDATE_LOCATION', async (request, sendResponse) => {
+      try {
+        const { location, tripCode } = request
+        const updatedLocation = await updateLocation({
+          location,
+          socket,
+          tripCode
+        })
+        io.in(`trip:${tripCode}`).emit('LOCATION_UPDATED', updatedLocation)
+        sendResponse({ msg: 'Event updated' })
+      } catch (error) {
+        console.log(error)
+        sendResponse({ error: "Couldn't update location, try again" })
       }
     })
   })

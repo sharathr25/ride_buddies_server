@@ -1,7 +1,7 @@
 const admin = require('firebase-admin')
 
-const getUserByPhoneNumber = async () => {
-  return await admin.auth().getUserByPhoneNumber(req.params.phoneNumber)
+const getUserByPhoneNumber = async phoneNumber => {
+  return await admin.auth().getUserByPhoneNumber(phoneNumber)
 }
 
 const verifyIdToken = async token => {
