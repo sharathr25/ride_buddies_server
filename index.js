@@ -14,7 +14,17 @@ const healthRouter = require('./src/routes/health.route')
 
 const initSocket = require('./src/socket')
 
-admin.initializeApp({ projectId: process.env.RIDE_BUDDIES_PROJECT_ID })
+admin.initializeApp({
+  projectId: process.env.RIDE_BUDDIES_PROJECT_ID,
+  credential: admin.credential.cert(
+    JSON.parse(
+      Buffer.from(
+        process.env.GOOGLE_APPLICATION_CREDENTIALS_BASE64,
+        'base64'
+      ).toString('ascii')
+    )
+  )
+})
 
 const app = express()
 
