@@ -43,9 +43,12 @@ initSocket(httpServer)
 const port = process.env.PORT || 3000
 
 mongoose.set('strictQuery', false)
-mongoose.connect(DB_URL, () => {
-  console.log('Database connected')
-  httpServer.listen(port, () => {
-    console.log(`Server started and listening on ${port}`)
+mongoose
+  .connect(process.env.RIDE_BUDDIES_MONGO_URL)
+  .then(() => {
+    console.log('Database connected')
+    httpServer.listen(port, () => {
+      console.log(`Server started and listening on ${port}`)
+    })
   })
-})
+  .catch(e => console.log(e))
