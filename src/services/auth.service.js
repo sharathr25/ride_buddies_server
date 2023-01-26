@@ -5,12 +5,23 @@ const getUserByPhoneNumber = async phoneNumber => {
 }
 
 const verifyIdToken = async token => {
-  const data = await admin.auth().verifyIdToken(token)
-  const { name, phone_number, uid, picture } = data
+  let {
+    name,
+    phone_number: phoneNumber,
+    uid,
+    picture: color
+  } = await admin.auth().verifyIdToken(token)
+
+  if (!name || !color) {
+    const user = await admin.auth().getUserByPhoneNumber(phoneNumber)
+    color = user.photoURL
+    name = user.displayName
+  }
+
   return {
     name,
-    phoneNumber: phone_number,
-    color: picture, // stored color as picture while sign up
+    phoneNumber,
+    color, // stored color as picture while sign up
     uid
   }
 }
