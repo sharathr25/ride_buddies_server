@@ -7,7 +7,23 @@ async function findByCode (code) {
 async function getTripOverviewByCode (code) {
   const trip = await findByCode(code)
 
-  const expensesGrouped = await Trip.aggregate([
+  return {
+    _id: trip._id,
+    name: trip.name,
+    code: trip.code,
+    creation: trip.creation,
+    riders: trip.riders,
+    events: trip.events,
+    expenses: trip.expenses
+  }
+}
+
+async function getRiderIdsAndExpenses (code) {
+  const { riders: ridersUids } = await Trip.findOne({ code }).select({
+    'riders.uid': 1
+  })
+
+  const [expensesGrouped] = await Trip.aggregate([
     { $match: { code: code } },
     { $project: { expenses: 1 } },
     { $unwind: '$expenses' },
@@ -16,11 +32,88 @@ async function getTripOverviewByCode (code) {
         _id: '$expenses.by',
         amount: { $sum: '$expenses.amount' }
       }
+    },
+    {
+      $group: {
+        _id: null,
+        allkeysandvalues: {
+          $push: {
+            k: '$_id',
+            v: '$amount'
+          }
+        }
+      }
+    },
+    {
+      $replaceRoot: {
+        newRoot: {
+          $arrayToObject: '$allkeysandvalues'
+        }
+      }
     }
   ])
 
-  const eventsGrouped = await Trip.aggregate([
+  const [{ commonExpensesForAll }] = await Trip.aggregate([
     { $match: { code: code } },
+    { $project: { expenses: 1 } },
+    { $unwind: '$expenses' },
+    {
+      $match: {
+        $expr: {
+          $eq: [
+            0,
+            {
+              $size: '$expenses.for'
+            }
+          ]
+        }
+      }
+    },
+    {
+      $group: {
+        _id: null,
+        commonExpensesForAll: { $sum: '$expenses.amount' }
+      }
+    }
+  ])
+
+  const expensesForCertainRiders = await Trip.aggregate([
+    { $match: { code: code } },
+    { $project: { expenses: 1 } },
+    { $unwind: '$expenses' },
+    {
+      $match: {
+        $expr: {
+          $ne: [
+            0,
+            {
+              $size: '$expenses.for'
+            }
+          ]
+        }
+      }
+    },
+    {
+      $project: {
+        _id: 0,
+        amount: '$expenses.amount',
+        for: '$expenses.for'
+        // currency: '$expenses.currency'
+      }
+    }
+  ])
+
+  return {
+    expensesForCertainRiders,
+    expensesGrouped,
+    commonExpensesForAll,
+    ridersUids
+  }
+}
+
+async function getEventsCount (tripCode) {
+  const [eventsCount] = await Trip.aggregate([
+    { $match: { code: tripCode } },
     { $project: { events: 1 } },
     { $unwind: '$events' },
     {
@@ -28,20 +121,28 @@ async function getTripOverviewByCode (code) {
         _id: '$events.type',
         count: { $sum: 1 }
       }
+    },
+    {
+      $group: {
+        _id: null,
+        allkeysandvalues: {
+          $push: {
+            k: '$_id',
+            v: '$count'
+          }
+        }
+      }
+    },
+    {
+      $replaceRoot: {
+        newRoot: {
+          $arrayToObject: '$allkeysandvalues'
+        }
+      }
     }
   ])
 
-  return {
-    _id: trip._id,
-    name: trip.name,
-    code: trip.code,
-    creation: trip.creation,
-    riders: trip.riders,
-    events: trip.events,
-    expenses: trip.expenses,
-    eventsGrouped,
-    expensesGrouped
-  }
+  return eventsCount
 }
 
 async function getTripsByUserId (uid) {
@@ -85,7 +186,7 @@ async function create ({ name, code, user }) {
 
 async function addRiderToTrip ({ tripCode, user }) {
   let trip = await findByCode(tripCode)
-  if (trip) {
+  if (trip && !trip.riders.find(r => r.uid === user.uid)) {
     trip.riders.push(user)
     trip = await trip.save()
   }
@@ -212,5 +313,7 @@ module.exports = {
   saveNewEvent,
   updateTripEvent,
   deleteEvent,
-  updateRiderLocation
+  updateRiderLocation,
+  getEventsCount,
+  getRiderIdsAndExpenses
 }

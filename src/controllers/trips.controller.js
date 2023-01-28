@@ -13,7 +13,9 @@ const {
   saveNewEvent,
   updateTripEvent,
   deleteEvent,
-  updateRiderLocation
+  updateRiderLocation,
+  getEventsCount,
+  getRiderIdsAndExpenses
 } = require('../services/trips.service')
 const { randomCode } = require('../utils')
 
@@ -48,8 +50,98 @@ async function createTrip (attrs) {
   return await create({ name, user, code })
 }
 
+async function getExpensesDetails (tripCode) {
+  const {
+    ridersUids,
+    expensesGrouped,
+    expensesForCertainRiders,
+    commonExpensesForAll
+  } = await getRiderIdsAndExpenses(tripCode)
+
+  const commonExpensesPerRider = Math.floor(
+    commonExpensesForAll / ridersUids.length
+  )
+
+  const totalExpenditure = ridersUids.reduce(
+    (acc, cur) => ({ ...acc, [cur.uid]: commonExpensesPerRider }),
+    {}
+  )
+
+  expensesForCertainRiders.forEach(e => {
+    const perRider = e.amount / e.for.length
+    e.for.forEach(uid => {
+      totalExpenditure[uid] += perRider
+    })
+  })
+
+  const ridersOwned = []
+  const ridersDued = []
+
+  const ridersBalance = ridersUids.reduce((acc, cur) => {
+    const balance =
+      (cur.uid in expensesGrouped ? expensesGrouped[cur.uid] : 0) -
+      totalExpenditure[cur.uid]
+    if (balance > 0) {
+      ridersOwned.push({ uid: cur.uid, amount: balance })
+    } else if (balance < 0) {
+      ridersDued.push({ uid: cur.uid, amount: balance * -1 })
+    }
+    return {
+      ...acc,
+      [cur.uid]: balance
+    }
+  }, {})
+
+  const suggestedPayments = []
+  let i = 0
+  let j = 0
+
+  while (i < ridersOwned.length && j < ridersDued.length) {
+    const balance = ridersOwned[i].amount - ridersDued[j].amount
+    if (balance > 0) {
+      ridersOwned[i].amount = balance
+      suggestedPayments.push({
+        from: ridersDued[j].uid,
+        to: ridersOwned[i].uid,
+        amount: ridersDued[j].amount
+      })
+      j++
+    } else {
+      ridersDued[j].amount = balance
+      suggestedPayments.push({
+        from: ridersDued[j].uid,
+        to: ridersOwned[i].uid,
+        amount: ridersOwned[i].amount
+      })
+      i++
+    }
+  }
+
+  return { suggestedPayments, ridersBalance, totalExpenditure }
+}
+
 async function getTripByCode (tripCode) {
-  return await getTripOverviewByCode(tripCode)
+  const { _id, name, code, creation, riders, events, expenses } =
+    await getTripOverviewByCode(tripCode)
+
+  const { totalExpenditure, ridersBalance, suggestedPayments } =
+    await getExpensesDetails(tripCode)
+
+  const eventsCount = await getEventsCount(tripCode)
+
+  return {
+    _id,
+    name,
+    code,
+    creation,
+    riders,
+    events,
+    expenses,
+    eventsCount,
+    totalExpenditure,
+    ridersBalance,
+    suggestedPayments
+  }
 }
 
 async function joinTrip ({ tripCode, user }) {
