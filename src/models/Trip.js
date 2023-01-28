@@ -51,6 +51,11 @@ const tripSchema = new Schema({
         by: String, // uid,
         on: { type: Date, default: Date.now }
       },
+      type: {
+        type: String,
+        default: 'EXPENSE',
+        enum: ['EXPENSE', 'SETTLEMENT']
+      },
       by: { type: String, required: true }, // uid
       title: { type: String, required: true }, // String
       amount: { type: Number, required: true },
