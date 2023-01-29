@@ -42,7 +42,10 @@ const tripSchema = new Schema({
         ]
       },
       title: String,
-      on: { type: Date, default: Date.now }
+      on: { type: Date, default: Date.now },
+      location: {
+        type: [Number]
+      }
     }
   ],
   expenses: [
@@ -55,6 +58,9 @@ const tripSchema = new Schema({
         type: String,
         default: 'EXPENSE',
         enum: ['EXPENSE', 'SETTLEMENT']
+      },
+      location: {
+        type: [Number]
       },
       by: { type: String, required: true }, // uid
       title: { type: String, required: true }, // String

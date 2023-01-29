@@ -4,8 +4,6 @@ const { createServer } = require('http')
 const mongoose = require('mongoose')
 const admin = require('firebase-admin')
 
-const { DB_URL } = require('./src/configs/db.config')
-
 const authMiddleware = require('./src/middlewares/auth.middleware')
 
 const tripsRouter = require('./src/routes/trips.route')
