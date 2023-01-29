@@ -23,7 +23,7 @@ async function getRiderIdsAndExpenses (code) {
     'riders.uid': 1
   })
 
-  const [expensesGrouped] = await Trip.aggregate([
+  const expensesGroupedArr = await Trip.aggregate([
     { $match: { code: code } },
     { $project: { expenses: 1 } },
     { $unwind: '$expenses' },
@@ -53,7 +53,7 @@ async function getRiderIdsAndExpenses (code) {
     }
   ])
 
-  const [{ commonExpensesForAll }] = await Trip.aggregate([
+  const commonExpensesForAllArr = await Trip.aggregate([
     { $match: { code: code } },
     { $project: { expenses: 1 } },
     { $unwind: '$expenses' },
@@ -105,8 +105,8 @@ async function getRiderIdsAndExpenses (code) {
 
   return {
     expensesForCertainRiders,
-    expensesGrouped,
-    commonExpensesForAll,
+    expensesGrouped: expensesGroupedArr[0] || {},
+    commonExpensesForAll: commonExpensesForAllArr[0]?.commonExpensesForAll || 0,
     ridersUids
   }
 }

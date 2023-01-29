@@ -124,10 +124,13 @@ async function getTripByCode (tripCode) {
   const { _id, name, code, creation, riders, events, expenses } =
     await getTripOverviewByCode(tripCode)
 
-  const { totalExpenditure, ridersBalance, suggestedPayments } =
-    await getExpensesDetails(tripCode)
+  const expensesWithoutSettlement = expenses.filter(e => e.type === 'EXPENSE')
 
-  const eventsCount = await getEventsCount(tripCode)
+  const numberOfExpenses = expensesWithoutSettlement.length
+  const totalAmountForExpenses = expensesWithoutSettlement.reduce(
+    (a, c) => a + c.amount,
+    0
+  )
 
   return {
     _id,
@@ -137,10 +140,8 @@ async function getTripByCode (tripCode) {
     riders,
     events,
     expenses,
-    eventsCount,
-    totalExpenditure,
-    ridersBalance,
-    suggestedPayments
+    numberOfExpenses,
+    totalAmountForExpenses
   }
 }
 
@@ -193,5 +194,7 @@ module.exports = {
   addEvent,
   updateEvent,
   removeEvent,
-  updateLocation
+  updateLocation,
+  getExpensesDetails,
+  getEventsCount
 }

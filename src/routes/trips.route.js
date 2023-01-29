@@ -6,7 +6,9 @@ const {
   getRiders,
   getExpenses,
   getEvents,
-  joinTrip
+  joinTrip,
+  getExpensesDetails,
+  getEventsCount
 } = require('../controllers/trips.controller')
 
 router.get('/mine', async (req, res, next) => {
@@ -33,6 +35,26 @@ router.get('/:tripId/expenses', async (req, res, next) => {
   try {
     const tripWithExpenses = await getExpenses(req.params.tripId)
     res.json(tripWithExpenses)
+  } catch (error) {
+    console.error(`Error while getting users`, error.message)
+    next(error)
+  }
+})
+
+router.get('/:tripCode/expensesDetails', async (req, res, next) => {
+  try {
+    const expensesDetails = await getExpensesDetails(req.params.tripCode)
+    res.json(expensesDetails)
+  } catch (error) {
+    console.error(`Error while getting users`, error.message)
+    next(error)
+  }
+})
+
+router.get('/:tripCode/eventsCount', async (req, res, next) => {
+  try {
+    const eventsCount = await getEventsCount(req.params.tripCode)
+    res.json(eventsCount)
   } catch (error) {
     console.error(`Error while getting users`, error.message)
     next(error)
