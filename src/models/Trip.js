@@ -62,8 +62,8 @@ const tripSchema = new Schema({
       location: {
         type: [Number]
       },
-      by: { type: String, required: true }, // uid
-      title: { type: String, required: true }, // String
+      from: { type: String, required: true }, // uid
+      to: { type: String, required: true }, // uid
       amount: { type: Number, required: true },
       currency: { type: String, default: 'INR' },
       for: [String] // uids - if empty means everyone shares this expense

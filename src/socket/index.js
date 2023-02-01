@@ -43,6 +43,18 @@ const initSocket = httpServer => {
       }
     })
 
+    socket.on('ADD_SETTLEMENT', async (request, sendResponse) => {
+      try {
+        const { expense, tripCode } = request
+        const newExpense = await addExpense({ expense, tripCode, socket })
+        io.in(`trip:${tripCode}`).emit('SETTLEMENT_ADDED', newExpense)
+        sendResponse({ msg: 'Settlement done' })
+      } catch (error) {
+        console.log(error)
+        sendResponse({ error: "Couldn't settle, try again" })
+      }
+    })
+
     socket.on('UPDATE_EXPENSE', async (request, sendResponse) => {
       try {
         const { expense, tripCode } = request

@@ -18,45 +18,19 @@ async function getTripOverviewByCode (code) {
   }
 }
 
-async function getRiderIdsAndExpenses (code) {
+async function getRiderIds (code) {
   const { riders: ridersUids } = await Trip.findOne({ code }).select({
     'riders.uid': 1
   })
+  return ridersUids
+}
 
-  const expensesGroupedArr = await Trip.aggregate([
-    { $match: { code: code } },
-    { $project: { expenses: 1 } },
-    { $unwind: '$expenses' },
-    {
-      $group: {
-        _id: '$expenses.by',
-        amount: { $sum: '$expenses.amount' }
-      }
-    },
-    {
-      $group: {
-        _id: null,
-        allkeysandvalues: {
-          $push: {
-            k: '$_id',
-            v: '$amount'
-          }
-        }
-      }
-    },
-    {
-      $replaceRoot: {
-        newRoot: {
-          $arrayToObject: '$allkeysandvalues'
-        }
-      }
-    }
-  ])
-
+async function getCommonExpenseForAll (code) {
   const commonExpensesForAllArr = await Trip.aggregate([
     { $match: { code: code } },
     { $project: { expenses: 1 } },
     { $unwind: '$expenses' },
+    { $match: { 'expenses.type': 'EXPENSE' } },
     {
       $match: {
         $expr: {
@@ -77,7 +51,11 @@ async function getRiderIdsAndExpenses (code) {
     }
   ])
 
-  const expensesForCertainRiders = await Trip.aggregate([
+  return commonExpensesForAllArr[0]?.commonExpensesForAll || 0
+}
+
+async function getExpensesForCertainRiders (code) {
+  return await Trip.aggregate([
     { $match: { code: code } },
     { $project: { expenses: 1 } },
     { $unwind: '$expenses' },
@@ -102,13 +80,75 @@ async function getRiderIdsAndExpenses (code) {
       }
     }
   ])
+}
 
-  return {
-    expensesForCertainRiders,
-    expensesGrouped: expensesGroupedArr[0] || {},
-    commonExpensesForAll: commonExpensesForAllArr[0]?.commonExpensesForAll || 0,
-    ridersUids
-  }
+async function getAmountSpentByRiders (code) {
+  const expensesGroupedArr = await Trip.aggregate([
+    { $match: { code: code } },
+    { $project: { expenses: 1 } },
+    { $unwind: '$expenses' },
+    {
+      $group: {
+        _id: '$expenses.from',
+        amount: { $sum: '$expenses.amount' }
+      }
+    },
+    {
+      $group: {
+        _id: null,
+        allkeysandvalues: {
+          $push: {
+            k: '$_id',
+            v: '$amount'
+          }
+        }
+      }
+    },
+    {
+      $replaceRoot: {
+        newRoot: {
+          $arrayToObject: '$allkeysandvalues'
+        }
+      }
+    }
+  ])
+
+  return expensesGroupedArr[0] || {}
+}
+
+async function getSettledAmountsForRiders (tripCode) {
+  const expensesGroupedArr = await Trip.aggregate([
+    { $match: { code: tripCode } },
+    { $project: { expenses: 1 } },
+    { $unwind: '$expenses' },
+    { $match: { 'expenses.type': 'SETTLEMENT' } },
+    {
+      $group: {
+        _id: '$expenses.to',
+        amount: { $sum: '$expenses.amount' }
+      }
+    },
+    {
+      $group: {
+        _id: null,
+        allkeysandvalues: {
+          $push: {
+            k: '$_id',
+            v: '$amount'
+          }
+        }
+      }
+    },
+    {
+      $replaceRoot: {
+        newRoot: {
+          $arrayToObject: '$allkeysandvalues'
+        }
+      }
+    }
+  ])
+
+  return expensesGroupedArr[0] || {}
 }
 
 async function getEventsCount (tripCode) {
@@ -234,7 +274,7 @@ async function updateTripExpense ({ tripCode, expense }) {
 async function deleteExpense ({ expenseId, tripCode }) {
   await Trip.updateOne(
     { code: tripCode },
-    { $pullAll: { expenses: [{ _id: expenseId }] } }
+    { $pull: { expenses: { _id: expenseId } } }
   )
   return expenseId
 }
@@ -315,5 +355,9 @@ module.exports = {
   deleteEvent,
   updateRiderLocation,
   getEventsCount,
-  getRiderIdsAndExpenses
+  getAmountSpentByRiders,
+  getRiderIds,
+  getCommonExpenseForAll,
+  getExpensesForCertainRiders,
+  getSettledAmountsForRiders
 }

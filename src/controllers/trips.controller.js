@@ -15,7 +15,11 @@ const {
   deleteEvent,
   updateRiderLocation,
   getEventsCount,
-  getRiderIdsAndExpenses
+  getRiderIds,
+  getCommonExpenseForAll,
+  getExpensesForCertainRiders,
+  getAmountSpentByRiders,
+  getSettledAmountsForRiders
 } = require('../services/trips.service')
 const { randomCode } = require('../utils')
 
@@ -51,16 +55,13 @@ async function createTrip (attrs) {
 }
 
 async function getExpensesDetails (tripCode) {
-  const {
-    ridersUids,
-    expensesGrouped,
-    expensesForCertainRiders,
-    commonExpensesForAll
-  } = await getRiderIdsAndExpenses(tripCode)
+  const ridersUids = await getRiderIds(tripCode)
+  const commonExpensesForAll = await getCommonExpenseForAll(tripCode)
+  const expensesForCertainRiders = await getExpensesForCertainRiders(tripCode)
+  const amountSpentByRiders = await getAmountSpentByRiders(tripCode)
+  const settlementAmountForRiders = await getSettledAmountsForRiders(tripCode)
 
-  const commonExpensesPerRider = Math.floor(
-    commonExpensesForAll / ridersUids.length
-  )
+  const commonExpensesPerRider = commonExpensesForAll / ridersUids.length
 
   const totalExpenditure = ridersUids.reduce(
     (acc, cur) => ({ ...acc, [cur.uid]: commonExpensesPerRider }),
@@ -70,7 +71,7 @@ async function getExpensesDetails (tripCode) {
   expensesForCertainRiders.forEach(e => {
     const perRider = e.amount / e.for.length
     e.for.forEach(uid => {
-      totalExpenditure[uid] += perRider
+      totalExpenditure[uid] = Math.floor(totalExpenditure[uid] + perRider)
     })
   })
 
@@ -79,7 +80,8 @@ async function getExpensesDetails (tripCode) {
 
   const ridersBalance = ridersUids.reduce((acc, cur) => {
     const balance =
-      (cur.uid in expensesGrouped ? expensesGrouped[cur.uid] : 0) -
+      (amountSpentByRiders[cur.uid] || 0) -
+      (settlementAmountForRiders[cur.uid] || 0) -
       totalExpenditure[cur.uid]
     if (balance > 0) {
       ridersOwned.push({ uid: cur.uid, amount: balance })
