@@ -35,7 +35,7 @@ const tripSchema = new Schema({
           'CUSTOM',
           'SIGHTSEEING',
           'REFUELING',
-          'COFEE_BREAK',
+          'COFFEE_BREAK',
           'REPAIR',
           'GOT_LOST',
           'PULL_OVER'
