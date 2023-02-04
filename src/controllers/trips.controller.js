@@ -86,7 +86,7 @@ async function getExpensesDetails (tripCode) {
     if (balance > 0) {
       ridersOwned.push({ uid: cur.uid, amount: balance })
     } else if (balance < 0) {
-      ridersDued.push({ uid: cur.uid, amount: balance * -1 })
+      ridersDued.push({ uid: cur.uid, amount: Math.abs(balance) })
     }
     return {
       ...acc,
@@ -105,7 +105,7 @@ async function getExpensesDetails (tripCode) {
       suggestedPayments.push({
         from: ridersDued[j].uid,
         to: ridersOwned[i].uid,
-        amount: ridersDued[j].amount
+        amount: Math.abs(ridersDued[j].amount)
       })
       j++
     } else {
@@ -113,7 +113,7 @@ async function getExpensesDetails (tripCode) {
       suggestedPayments.push({
         from: ridersDued[j].uid,
         to: ridersOwned[i].uid,
-        amount: ridersOwned[i].amount
+        amount: Math.abs(ridersOwned[i].amount)
       })
       i++
     }
