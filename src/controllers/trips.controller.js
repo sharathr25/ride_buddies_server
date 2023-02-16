@@ -61,17 +61,25 @@ async function getExpensesDetails (tripCode) {
   const amountSpentByRiders = await getAmountSpentByRiders(tripCode)
   const settlementAmountForRiders = await getSettledAmountsForRiders(tripCode)
 
-  const commonExpensesPerRider = commonExpensesForAll / ridersUids.length
+  const commonExpensesPerRider = Math.floor(
+    commonExpensesForAll / ridersUids.length
+  )
+  const adjustment = commonExpensesForAll % ridersUids.length
 
   const totalExpenditure = ridersUids.reduce(
-    (acc, cur) => ({ ...acc, [cur.uid]: commonExpensesPerRider }),
+    (acc, cur, i) => ({
+      ...acc,
+      [cur.uid]: commonExpensesPerRider + (i === 0 ? adjustment : 0)
+    }),
     {}
   )
 
   expensesForCertainRiders.forEach(e => {
-    const perRider = e.amount / e.for.length
-    e.for.forEach(uid => {
-      totalExpenditure[uid] = Math.floor(totalExpenditure[uid] + perRider)
+    const perRider = Math.floor(e.amount / e.for.length)
+    const adjustment = e.amount % e.for.length
+    e.for.forEach((uid, i) => {
+      totalExpenditure[uid] =
+        totalExpenditure[uid] + perRider + (i === 0 ? adjustment : 0)
     })
   })
 
