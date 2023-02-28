@@ -23,6 +23,23 @@ const {
 } = require('../services/trips.service')
 const { randomCode } = require('../utils')
 
+const COLORS = [
+  '#DB3E00',
+  '#1273DE',
+  '#004DCF',
+  '#5300EB',
+  '#417505',
+  '#BD10E0',
+  '#9013FE',
+  '#50E3C2',
+  '#9400D3',
+  '#4B0082',
+  '#0000FF',
+  '#00FF00',
+  '#FF7F00',
+  '#FF0000'
+]
+
 async function getMyTrips (attrs) {
   const { user } = attrs
   const { uid } = user
@@ -156,6 +173,7 @@ async function getTripByCode (tripCode) {
 }
 
 async function joinTrip ({ tripCode, user }) {
+  user.color = COLORS[Math.floor(Math.random() * COLORS.length)]
   return await addRiderToTrip({ tripCode, user })
 }
 

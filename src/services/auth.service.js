@@ -8,20 +8,17 @@ const verifyIdToken = async token => {
   let {
     name,
     phone_number: phoneNumber,
-    uid,
-    picture: color
+    uid
   } = await admin.auth().verifyIdToken(token)
 
-  if (!name || !color) {
+  if (!name) {
     const user = await admin.auth().getUserByPhoneNumber(phoneNumber)
-    color = user.photoURL
     name = user.displayName
   }
 
   return {
     name,
     phoneNumber,
-    color, // stored color as picture while sign up
     uid
   }
 }
